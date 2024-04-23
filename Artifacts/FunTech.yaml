@@ -1,0 +1,1264 @@
+swagger: '2.0'
+info:
+  title:  Yandex Funtech  API
+  description: API documentation for the  Yandex Funtech project
+  contact:
+    email: yacrm@yandex.ru
+  license:
+    name: ---
+  version: v1
+host: funtech.sytes.net
+schemes:
+  - https
+basePath: /api/v1
+consumes:
+  - application/json
+produces:
+  - application/json
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+security:
+  - Bearer: []
+paths:
+  /applications/:
+    post:
+      operationId: applications_create
+      description: ViewSet для создания и удаления заявок на участие в мероприятиях.
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ApplicationCreateAnonymous'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/ApplicationCreateAnonymous'
+      tags:
+        - applications
+    parameters: []
+  /applications/{id}/:
+    delete:
+      operationId: applications_delete
+      description: ViewSet для создания и удаления заявок на участие в мероприятиях.
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+        - applications
+    parameters:
+      - name: id
+        in: path
+        description: Уникальное целочисленное значение, идентифицирующее эту Заявку.
+        required: true
+        type: integer
+  /auth/jwt/create/:
+    post:
+      operationId: auth_jwt_create_create
+      description: |-
+        Принимает набор учетных данных пользователя и возвращает пару веб-токенов access и refresh JSON для подтверждения аутентификации этих учетных данных.
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/TokenObtainPair'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/TokenObtainPair'
+      tags:
+        - auth
+    parameters: []
+  /auth/jwt/refresh/:
+    post:
+      operationId: auth_jwt_refresh_create
+      description: |-
+        Принимает веб-токен JSON типа обновления и возвращает веб-токен JSON типа доступа, если токен обновления действителен.
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/TokenRefresh'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/TokenRefresh'
+      tags:
+        - auth
+    parameters: []
+  /auth/jwt/verify/:
+    post:
+      operationId: auth_jwt_verify_create
+      description: |-
+        Принимает токен и указывает, действителен ли он. Это представление не предоставляет никакой информации о пригодности токена для конкретного использования.
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/TokenVerify'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/TokenVerify'
+      tags:
+        - auth
+    parameters: []
+  /events/:
+    get:
+      operationId: events_list
+      description: Endpoint, чтобы получить список событий, доступных как авторизованным, так и неавторизованным посетителям, события можно отфильтровать и отсортировать (упорядочить).
+      parameters:
+        - name: name
+          in: query
+          description: фильтрация по частичному совпадению в начале или других частях имени.
+          type: string
+        - name: is_deleted
+          in: query
+          description: фильтрация по полю is_deleted, показывающему, отключено ли событие.
+          type: boolean
+        - name: is_registrated
+          in: query
+          description: 'Показывает авторизованному пользователю, зарегистрировался ли этот пользователь для участия в мероприятии. Всегда показывает все события анонимному пользователю. Принимает значение 0 за значение False, а значение 1 - за значение True. Примеры ввода: ?is_registrated=0, ?is_registrated=1'
+          type: integer
+        - name: not_started
+          in: query
+          description: 'Отображает события, которые еще не начались. В качестве входных значений принимает значения True, False, 0 и 1, в противном случае возвращает все события. Пример ввода: ?not_started=True'
+          type: boolean
+        - name: status
+          in: query
+          description: 'фильтрация по статусам событий, фильтр принимает одно или несколько значений, разделенных запятыми, примеры ввода: ?status=registration%20is%20open%2Cregistration%20is%20closed, ?status=registration%20is%20closed'
+          type: array
+          items:
+            type: string
+            enum:
+              - registration is open
+              - registration offline is closed
+              - registration online is closed
+              - registration is closed
+        - name: format
+          in: query
+          description: 'фильтрация по форматам событий, фильтр принимает одно или несколько значений, разделенных запятыми, примеры ввода: ?format=offline,hybrid, ?format=online'
+          type: array
+          items:
+            type: string
+            enum:
+              - offline
+              - online
+              - hybrid
+        - name: event_type
+          in: query
+          description: 'фильтрация по типам событий, фильтр принимает одно или несколько значений slug, разделенных запятыми, пример ввода: ?event_type=conference%2Cmeetup'
+          type: string
+          format: slug
+        - name: specializations
+          in: query
+          description: 'фильтрация по специализациям событий, фильтр принимает одно или несколько значений slug, разделенных запятыми, пример ввода: ?specializations=backend,analytics'
+          type: string
+          format: slug
+        - name: city
+          in: query
+          description: 'фильтрация по городам событий, фильтр принимает одно или несколько значений slug, разделенных запятыми, пример ввода: ?city=moscow,kazan'
+          type: string
+          format: slug
+        - name: start_date
+          in: query
+          description: 'фильтрация по самому раннему времени начала события, включая входное значение, примеры ввода: ''2020-01-01'', ''2024-03-04T16:20:55'''
+          type: string
+          format: date-time
+        - name: end_date
+          in: query
+          description: 'фильтрация по последнему времени начала события, включая входное значение, примеры ввода: ''2020-01-01'', ''2024-03-04T16:20:55'''
+          type: string
+          format: date-time
+        - name: ordering
+          in: query
+          description: 'Какое поле использовать при упорядочивании результатов. Вы можете сортировать объекты по идентификатору (по умолчанию), времени начала (в хронологическом порядке) и названию (в алфавитном порядке). Примеры ввода: ?ordering=start_time, ?ordering=name'
+          type: string
+        - name: page
+          in: query
+          description: Номер страницы в разбитом на страницы (Пагинация) результирующем наборе.
+          required: false
+          type: integer
+        - name: limit
+          in: query
+          description: Количество результатов, возвращаемых на страницу.
+          required: false
+          type: integer
+      responses:
+        '200':
+          description: ''
+          schema:
+            required:
+              - count
+              - results
+            type: object
+            properties:
+              count:
+                type: integer
+              next:
+                type: string
+                format: uri
+                x-nullable: true
+              previous:
+                type: string
+                format: uri
+                x-nullable: true
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/EventList'
+      tags:
+        - events
+    post:
+      operationId: events_create
+      description: |-
+        ViewSet предоставляет конечные точки для перечисления, создания, извлечения, обновления, частичного обновления и деактивации событий.
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/EventCreate'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/EventCreate'
+      tags:
+        - events
+    parameters: []
+  /events/three-recommended-events/:
+    get:
+      operationId: events_three_recommended_events
+      description: |-
+        Показывает три рекомендуемых события для авторизованного пользователя в соответствии со специализацией пользователя.
+      parameters:
+        - name: ordering
+          in: query
+          description: Какое поле использовать при упорядочивании результатов.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/EventList'
+      tags:
+        - events
+    parameters: []
+  /events/{id}/:
+    get:
+      operationId: events_read
+      description: |-
+        ViewSet предоставляет конечные точки для перечисления, создания, извлечения, обновления, частичного обновления и деактивации событий.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/EventDetail'
+      tags:
+        - events
+    patch:
+      operationId: events_partial_update
+      description: |-
+        ViewSet предоставляет конечные точки для перечисления, создания, извлечения, обновления, частичного обновления и деактивации событий.
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/EventList'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/EventList'
+      tags:
+        - events
+    parameters:
+      - name: id
+        in: path
+        description: Уникальное целочисленное значение, идентифицирующее данное Мероприятие.
+        required: true
+        type: integer
+  /events/{id}/activate/:
+    patch:
+      operationId: events_activate
+      description: Активировать определенное событие.
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/EventList'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/EventList'
+      tags:
+        - events
+    parameters:
+      - name: id
+        in: path
+        description: Уникальное целочисленное значение, идентифицирующее данное Мероприятие.
+        required: true
+        type: integer
+  /events/{id}/deactivate/:
+    patch:
+      operationId: events_deactivate
+      description: Деактивировать определенное событие.
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/EventList'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/EventList'
+      tags:
+        - events
+    parameters:
+      - name: id
+        in: path
+        description: Уникальное целочисленное значение, идентифицирующее данное Мероприятие.
+        required: true
+        type: integer
+  /notification_settings/{id}/:
+    patch:
+      operationId: notification_settings_partial_update
+      description: APIView для редактирования NotificationSettings по PATCH запросам.
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/NotificationSettings'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/NotificationSettings'
+      tags:
+        - notification_settings
+    parameters:
+      - name: id
+        in: path
+        description: Уникальное целочисленное значение, идентифицирующее Настройки уведомлений.
+        required: true
+        type: integer
+  /users/:
+    get:
+      operationId: users_list
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+      tags:
+        - users
+    post:
+      operationId: users_create
+      description: ''
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/UserCreate'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/UserCreate'
+      tags:
+        - users
+    parameters: []
+  /users/activation/{uid}/{token}/:
+    get:
+      operationId: users_activation
+      description: Активация пользователя по ссылке на электронную почту
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Activation'
+      tags:
+        - users
+    parameters:
+      - name: uid
+        in: path
+        required: true
+        type: string
+      - name: token
+        in: path
+        required: true
+        type: string
+  /users/me/:
+    get:
+      operationId: users_me_read
+      description: Демонстрация личных данных пользователя.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+      tags:
+        - users
+    patch:
+      operationId: users_me_partial_update
+      description: Обновление данных пользователя.
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/User'
+      tags:
+        - users
+    parameters: []
+  /users/resend_activation/:
+    post:
+      operationId: users_resend_activation
+      description: ''
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/User'
+      tags:
+        - users
+    parameters: []
+definitions:
+  ApplicationCreateAnonymous:
+    required:
+      - event
+      - first_name
+      - last_name
+      - email
+      - phone
+      - activity
+      - specializations
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      user:
+        title: User
+        type: integer
+        readOnly: true
+      event:
+        title: Мероприятие
+        type: integer
+      format:
+        title: Формат участия
+        type: string
+        enum:
+          - online
+          - offline
+      source:
+        title: Источник информации
+        type: integer
+        x-nullable: true
+      first_name:
+        title: Имя
+        type: string
+        maxLength: 40
+        minLength: 1
+      last_name:
+        title: Фамилия
+        type: string
+        maxLength: 40
+        minLength: 1
+      email:
+        title: Электронная почта
+        type: string
+        format: email
+        maxLength: 100
+        minLength: 1
+      phone:
+        title: Телефон
+        type: string
+        pattern: ^(\+7|7|8)\d{10}$
+        maxLength: 20
+        minLength: 1
+      telegram:
+        title: Телеграм ID
+        type: string
+        pattern: ^@[a-zA-Z0-9_]{5,32}$
+        maxLength: 33
+        x-nullable: true
+      birth_date:
+        title: Дата рождения
+        type: string
+        format: date
+        x-nullable: true
+      city:
+        title: Город
+        type: string
+        maxLength: 40
+        x-nullable: true
+      activity:
+        title: Род занятий
+        type: string
+        enum:
+          - working
+          - studying
+          - job seeking
+      company:
+        title: Место работы
+        type: string
+        maxLength: 50
+        x-nullable: true
+      position:
+        title: Должность
+        type: string
+        maxLength: 100
+        x-nullable: true
+      experience_years:
+        title: Опыт работы в годах
+        type: integer
+        maximum: 100
+        minimum: 0
+        x-nullable: true
+      specializations:
+        type: array
+        items:
+          type: integer
+        uniqueItems: true
+  TokenObtainPair:
+    required:
+      - email
+      - password
+    type: object
+    properties:
+      email:
+        title: Email
+        type: string
+        minLength: 1
+      password:
+        title: Password
+        type: string
+        minLength: 1
+  TokenRefresh:
+    required:
+      - refresh
+    type: object
+    properties:
+      refresh:
+        title: Refresh
+        type: string
+        minLength: 1
+      access:
+        title: Access
+        type: string
+        readOnly: true
+        minLength: 1
+  TokenVerify:
+    required:
+      - token
+    type: object
+    properties:
+      token:
+        title: Token
+        type: string
+        minLength: 1
+  Speaker:
+    description: Показывает спикера первой презентации (выступления) мероприятия.
+    required:
+      - speaker_name
+      - company
+      - position
+      - speaker_description
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      speaker_name:
+        title: ФИО
+        type: string
+        maxLength: 100
+        minLength: 1
+      company:
+        title: Место работы
+        type: string
+        maxLength: 50
+        minLength: 1
+      position:
+        title: Должность
+        type: string
+        maxLength: 100
+        minLength: 1
+      speaker_description:
+        title: Регалии
+        type: string
+        minLength: 1
+      photo:
+        title: Фото
+        type: string
+        readOnly: true
+        format: uri
+  City:
+    required:
+      - city_name
+      - city_slug
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      city_name:
+        title: Название
+        type: string
+        maxLength: 40
+        minLength: 1
+      city_slug:
+        title: Слаг
+        type: string
+        format: slug
+        pattern: ^[-a-zA-Z0-9_]+$
+        maxLength: 40
+        minLength: 1
+    x-nullable: true
+  EventType:
+    required:
+      - event_type_name
+      - event_type_slug
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      event_type_name:
+        title: Название
+        type: string
+        maxLength: 40
+        minLength: 1
+      event_type_slug:
+        title: Слаг
+        type: string
+        format: slug
+        pattern: ^[-a-zA-Z0-9_]+$
+        maxLength: 40
+        minLength: 1
+  UserSpecialization:
+    required:
+      - specialization_name
+      - specialization_slug
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      specialization_name:
+        title: Название
+        type: string
+        maxLength: 40
+        minLength: 1
+      specialization_slug:
+        title: Слаг
+        type: string
+        format: slug
+        pattern: ^[-a-zA-Z0-9_]+$
+        maxLength: 40
+        minLength: 1
+  EventList:
+    required:
+      - name
+      - description
+      - start_time
+      - city
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      name:
+        title: Название
+        type: string
+        maxLength: 100
+        minLength: 1
+      is_deleted:
+        title: Деактивировано
+        type: boolean
+      is_registrated:
+        title: Is registrated
+        type: boolean
+        readOnly: true
+      submitted_applications:
+        title: Поданные заявки
+        type: integer
+        readOnly: true
+      first_speaker:
+        $ref: '#/definitions/Speaker'
+      organization:
+        title: Организатор
+        type: string
+        maxLength: 100
+        minLength: 1
+      description:
+        title: Описание
+        type: string
+        minLength: 1
+      status:
+        title: Статус
+        type: string
+        enum:
+          - registration is open
+          - registration offline is closed
+          - registration online is closed
+          - registration is closed
+      format:
+        title: Формат
+        type: string
+        enum:
+          - offline
+          - online
+          - hybrid
+      created:
+        title: Создано
+        type: string
+        format: date-time
+      start_time:
+        title: Время начала
+        type: string
+        format: date-time
+      end_time:
+        title: Время окончания
+        type: string
+        format: date-time
+        x-nullable: true
+      cost:
+        title: Стоимость
+        type: number
+        minimum: 0
+      city:
+        $ref: '#/definitions/City'
+      place:
+        title: Место
+        type: string
+      participant_offline_limit:
+        title: Офлайн-лимит
+        description: Максимальное количество участников в формате офлайн
+        type: integer
+        maximum: 2147483647
+        minimum: 0
+        x-nullable: true
+      participant_online_limit:
+        title: Онлайн-лимит
+        description: Максимальное количество участников в формате онлайн
+        type: integer
+        maximum: 2147483647
+        minimum: 0
+        x-nullable: true
+      registration_deadline:
+        title: Регистрация до
+        description: Предельный срок (дата и время) регистрации на участие в мероприятии
+        type: string
+        format: date-time
+        x-nullable: true
+      livestream_link:
+        title: Трансляция
+        type: string
+        format: uri
+        maxLength: 200
+        x-nullable: true
+      additional_materials_link:
+        title: Дополнительные материалы
+        type: string
+        format: uri
+        maxLength: 200
+        x-nullable: true
+      image:
+        title: Афиша
+        type: string
+        readOnly: true
+        format: uri
+      is_featured:
+        title: Продвигать на Главной
+        type: boolean
+      is_featured_on_yandex_afisha:
+        title: Продвигать на Яндекс Афише
+        type: boolean
+      event_type:
+        $ref: '#/definitions/EventType'
+      specializations:
+        $ref: '#/definitions/UserSpecialization'
+  EventCreate:
+    required:
+      - name
+      - description
+      - specializations
+      - start_time
+      - event_type
+    type: object
+    properties:
+      name:
+        title: Название
+        type: string
+        maxLength: 100
+        minLength: 1
+      description:
+        title: Описание
+        type: string
+        minLength: 1
+      specializations:
+        title: Направление
+        type: integer
+      start_time:
+        title: Время начала
+        type: string
+        format: date-time
+      format:
+        title: Формат
+        type: string
+        enum:
+          - offline
+          - online
+          - hybrid
+      place:
+        title: Место
+        type: string
+      participant_offline_limit:
+        title: Офлайн-лимит
+        description: Максимальное количество участников в формате офлайн
+        type: integer
+        maximum: 2147483647
+        minimum: 0
+        x-nullable: true
+      participant_online_limit:
+        title: Онлайн-лимит
+        description: Максимальное количество участников в формате онлайн
+        type: integer
+        maximum: 2147483647
+        minimum: 0
+        x-nullable: true
+      livestream_link:
+        title: Трансляция
+        type: string
+        format: uri
+        maxLength: 200
+        x-nullable: true
+      additional_materials_link:
+        title: Дополнительные материалы
+        type: string
+        format: uri
+        maxLength: 200
+        x-nullable: true
+      is_featured:
+        title: Продвигать на Главной
+        type: boolean
+      is_featured_on_yandex_afisha:
+        title: Продвигать на Яндекс Афише
+        type: boolean
+      event_type:
+        title: Тип
+        type: integer
+      city:
+        title: Город
+        type: integer
+        x-nullable: true
+  EventPart:
+    required:
+      - event_part_name
+      - event_part_description
+      - event_part_created
+      - event_part_start_time
+      - presentation_type
+      - event
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      speaker:
+        $ref: '#/definitions/Speaker'
+      event_part_name:
+        title: Название
+        type: string
+        maxLength: 100
+        minLength: 1
+      event_part_description:
+        title: Описание
+        type: string
+        minLength: 1
+        x-nullable: true
+      event_part_created:
+        title: Создано
+        type: string
+        format: date-time
+      event_part_start_time:
+        title: Время начала
+        type: string
+        format: date-time
+      presentation_type:
+        title: Тип
+        type: string
+        maxLength: 100
+        minLength: 1
+      event:
+        title: Мероприятие
+        type: integer
+  EventDetail:
+    required:
+      - name
+      - description
+      - start_time
+      - city
+      - event_parts
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      name:
+        title: Название
+        type: string
+        maxLength: 100
+        minLength: 1
+      is_deleted:
+        title: Деактивировано
+        type: boolean
+      is_registrated:
+        title: Is registrated
+        type: boolean
+        readOnly: true
+      organization:
+        title: Организатор
+        type: string
+        maxLength: 100
+        minLength: 1
+      description:
+        title: Описание
+        type: string
+        minLength: 1
+      status:
+        title: Статус
+        type: string
+        enum:
+          - registration is open
+          - registration offline is closed
+          - registration online is closed
+          - registration is closed
+      format:
+        title: Формат
+        type: string
+        enum:
+          - offline
+          - online
+          - hybrid
+      created:
+        title: Создано
+        type: string
+        format: date-time
+      start_time:
+        title: Время начала
+        type: string
+        format: date-time
+      end_time:
+        title: Время окончания
+        type: string
+        format: date-time
+        x-nullable: true
+      cost:
+        title: Стоимость
+        type: number
+        minimum: 0
+      city:
+        $ref: '#/definitions/City'
+      place:
+        title: Место
+        type: string
+      participant_offline_limit:
+        title: Офлайн-лимит
+        description: Максимальное количество участников в формате офлайн
+        type: integer
+        maximum: 2147483647
+        minimum: 0
+        x-nullable: true
+      participant_online_limit:
+        title: Онлайн-лимит
+        description: Максимальное количество участников в формате онлайн
+        type: integer
+        maximum: 2147483647
+        minimum: 0
+        x-nullable: true
+      registration_deadline:
+        title: Регистрация до
+        description: Предельный срок (дата и время) регистрации на участие в мероприятии
+        type: string
+        format: date-time
+        x-nullable: true
+      livestream_link:
+        title: Трансляция
+        type: string
+        format: uri
+        maxLength: 200
+        x-nullable: true
+      additional_materials_link:
+        title: Дополнительные материалы
+        type: string
+        format: uri
+        maxLength: 200
+        x-nullable: true
+      image:
+        title: Афиша
+        type: string
+        readOnly: true
+        format: uri
+      is_featured:
+        title: Продвигать на Главной
+        type: boolean
+      is_featured_on_yandex_afisha:
+        title: Продвигать на Яндекс Афише
+        type: boolean
+      event_type:
+        $ref: '#/definitions/EventType'
+      specializations:
+        $ref: '#/definitions/UserSpecialization'
+      event_parts:
+        type: array
+        items:
+          $ref: '#/definitions/EventPart'
+  NotificationSettings:
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      user:
+        title: Пользователь
+        type: integer
+        readOnly: true
+      application:
+        title: Заявка
+        type: integer
+        readOnly: true
+      email_notifications:
+        title: На почту
+        type: string
+        enum:
+          - day before
+          - hour before
+          - 15 minutes before
+        x-nullable: true
+      sms_notifications:
+        title: По СМС
+        type: string
+        enum:
+          - day before
+          - hour before
+          - 15 minutes before
+        x-nullable: true
+      telegram_notifications:
+        title: В телеграм
+        type: string
+        enum:
+          - day before
+          - hour before
+          - 15 minutes before
+        x-nullable: true
+      phone_call_notifications:
+        title: Позвонить
+        type: string
+        enum:
+          - day before
+          - hour before
+          - 15 minutes before
+        x-nullable: true
+  Specialization:
+    required:
+      - name
+      - slug
+    type: object
+    properties:
+      name:
+        title: Название
+        type: string
+        maxLength: 40
+        minLength: 1
+      slug:
+        title: Slug
+        type: string
+        format: slug
+        pattern: ^[-a-zA-Z0-9_]+$
+        minLength: 1
+  User:
+    required:
+      - first_name
+      - last_name
+      - phone
+      - specializations
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      first_name:
+        title: Имя
+        type: string
+        maxLength: 40
+        minLength: 1
+      last_name:
+        title: Фамилия
+        type: string
+        maxLength: 40
+        minLength: 1
+      email:
+        title: Электронная почта
+        type: string
+        format: email
+        readOnly: true
+        minLength: 1
+      phone:
+        title: Телефон
+        type: string
+        pattern: ^(\+7|7|8)\d{10}$
+        maxLength: 20
+        minLength: 1
+      telegram:
+        title: Телеграм ID
+        type: string
+        pattern: ^@[a-zA-Z0-9_]{5,32}$
+        maxLength: 33
+        x-nullable: true
+      birth_date:
+        title: Дата рождения
+        type: string
+        format: date
+        x-nullable: true
+      city:
+        title: Город
+        type: string
+        maxLength: 40
+        x-nullable: true
+      activity:
+        title: Род занятий
+        type: string
+        enum:
+          - working
+          - studying
+          - job seeking
+      company:
+        title: Место работы
+        type: string
+        maxLength: 50
+        x-nullable: true
+      position:
+        title: Должность
+        type: string
+        maxLength: 100
+        x-nullable: true
+      experience_years:
+        title: Опыт работы в годах
+        type: integer
+        maximum: 100
+        minimum: 0
+        x-nullable: true
+      specializations:
+        type: array
+        items:
+          $ref: '#/definitions/Specialization'
+  UserCreate:
+    required:
+      - phone
+      - first_name
+      - last_name
+      - email
+      - password
+    type: object
+    properties:
+      phone:
+        title: Телефон
+        type: string
+        pattern: ^(\+7|7|8)\d{10}$
+        maxLength: 20
+        minLength: 1
+      first_name:
+        title: Имя
+        type: string
+        maxLength: 40
+        minLength: 1
+      last_name:
+        title: Фамилия
+        type: string
+        maxLength: 40
+        minLength: 1
+      email:
+        title: Электронная почта
+        type: string
+        format: email
+        maxLength: 100
+        minLength: 1
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      password:
+        title: Password
+        type: string
+        minLength: 1
+  Activation:
+    required:
+      - uid
+      - token
+    type: object
+    properties:
+      uid:
+        title: Uid
+        type: string
+        minLength: 1
+      token:
+        title: Token
+        type: string
+        minLength: 1
